@@ -1,8 +1,13 @@
 import express from 'express';
 import cors from "cors"
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 import { addExcerciseToUser, createNewUser, findUserById, getAllUsers, getLogsById } from './models/user/user.services.js';
 import connectDB from './database/config.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
 
 const app = express()
