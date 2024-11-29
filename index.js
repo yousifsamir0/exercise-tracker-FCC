@@ -5,6 +5,7 @@ import { dirname } from 'path';
 
 import { addExcerciseToUser, createNewUser, findUserById, getAllUsers, getLogsById } from './models/user/user.services.js';
 import connectDB from './database/config.js';
+import { formatDate } from './utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -40,9 +41,13 @@ app.get('/api/users', async (req, res) => {
 
 app.post('/api/users/:id/exercises', async (req, res) => {
   const uid = req.params.id;
-  const { description, duration, date } = req.body;
-  if (!dateRegex.test(date)) {
+  let { description, duration, date } = req.body;
+
+  if (date && !dateRegex.test(date)) {
     return res.json({ error: "invalid date format" })
+  }
+  if (!date) {
+    date = null
   }
   if (isNaN(duration)) {
     return res.json({ error: "invalid duration format" })
@@ -51,13 +56,19 @@ app.post('/api/users/:id/exercises', async (req, res) => {
   if (!user) {
     return res.json({ error: "user not found" })
   }
-  await addExcerciseToUser(user, {
+  const excercise = await addExcerciseToUser(user, {
     description,
     duration,
-    date: new Date(date),
+    date: (date) ? new Date(date) : new Date(),
   })
 
-  return res.json(user);
+  return res.json({
+    username: user.username,
+    _id: user._id,
+    description: excercise.description,
+    duration: excercise.duration,
+    date: formatDate(excercise.date),
+  });
 });
 
 app.get('/api/users/:_id/logs', async (req, res) => {
